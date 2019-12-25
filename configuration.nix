@@ -33,7 +33,7 @@ in
   # };
 
   # Set your time zone.
-  time.timeZone = "Russia/Moscow";
+  time.timeZone = "Europe/Moscow";
 
   # $ nix search wget
   environment.systemPackages = with pkgs; [
