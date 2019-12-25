@@ -5,6 +5,10 @@ with pkgs;
 let
   v = (import ./vim.nix) pkgs;
 
+  isEnableGUI = true;
+  isEnableSSHD = true;
+  isEnableFW = false;
+
 in
 
 {
@@ -32,28 +36,32 @@ in
   #   defaultLocale = "en_US.UTF-8";
   # };
 
-  # Set your time zone.
   time.timeZone = "Europe/Moscow";
 
-  # $ nix search wget
   environment.systemPackages = with pkgs; [
-    elfutils pax-utils patchelf binutils wget git ccache gcc7 chromium v tmux file
+    elfutils pax-utils patchelf binutils wget 
+    git ccache gcc7 chromium v tmux file
   ];
-  # Some programs need SUID wrappers, can be configured further or are
-  # started in user sessions.
-  # programs.mtr.enable = true;
-  # programs.gnupg.agent = { enable = true; enableSSHSupport = true; };
 
-  services.openssh.enable = true;
-  networking.firewall.enable = false;
+  services = {
+    openssh.enable = isEnableSSHD;
+    
+    xserver = {
+      enable = isEnableGUI;
+      displayManager = {
+        sddm.enable = isEnableGUI;
+      };
+      desktopManager = {
+        plasma5.enable = isEnableGUI;
+      };      
+    };
+  };
 
-  # sound.enable = true;
-  # hardware.pulseaudio.enable = true;
-  services.xserver.enable = true;
-  #services.xserver.layout = "us";
-  # services.xserver.xkbOptions = "eurosign:e";
-  services.xserver.displayManager.sddm.enable = true;
-  services.xserver.desktopManager.plasma5.enable = true;
+  networking = { 
+    firewall = { 
+      enable = isEnableFW; 
+    }; 
+  };
   
   users.users = {
     hex = {
