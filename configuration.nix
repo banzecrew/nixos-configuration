@@ -3,32 +3,34 @@
 with pkgs;
 
 let
+
   v = (import ./vim.nix) pkgs;
+
+  tmpPackages = [];
 
   isEnableGUI = true;
   isEnableSSHD = true;
   isEnableFW = false;
+  isAllowUnfree = true;
+
+  hostName = "old-machine";
 
 in
 
 {
-  imports =
-    [ # Include the results of the hardware scan.
-      ./hardware-configuration.nix
-    ];
+  imports = [ 
+    ./hardware-configuration.nix
+  ];
 
-  # Use the GRUB 2 boot loader.
-  boot.loader.grub.enable = true;
-  boot.loader.grub.version = 2;
-  # boot.loader.grub.efiSupport = true;
-  # boot.loader.grub.efiInstallAsRemovable = true;
-  # boot.loader.efi.efiSysMountPoint = "/boot/efi";
-  # Define on which hard drive you want to install Grub.
-  boot.loader.grub.device = "/dev/sda"; # or "nodev" for efi only
-
-  networking.hostName = "nixos-mycoolvm"; # Define your hostname.
-  # networking.proxy.default = "http://user:password@proxy:port/";
-  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
+  boot = {
+    loader = {
+      grub = {
+        enable = true;
+        version = 2;
+        device = "/dev/sda";
+      };
+    };
+  };
 
   # i18n = {
   #   consoleFont = "Lat2-Terminus16";
@@ -36,12 +38,22 @@ in
   #   defaultLocale = "en_US.UTF-8";
   # };
 
-  time.timeZone = "Europe/Moscow";
+  time = {
+    timeZone = "Europe/Moscow";
+  };
 
-  environment.systemPackages = with pkgs; [
-    elfutils pax-utils patchelf binutils wget 
-    git ccache gcc7 chromium v tmux file
-  ];
+  environment = {
+    systemPackages = [
+      elfutils pax-utils patchelf binutils wget 
+      git ccache gcc7 chromium v tmux file
+    ] ++ tmpPackages;
+  };
+
+  nixpkgs = {
+    config = {
+      allowUnfree = isAllowUnfree;
+    };
+  };
 
   services = {
     openssh.enable = isEnableSSHD;
@@ -60,7 +72,8 @@ in
   networking = { 
     firewall = { 
       enable = isEnableFW; 
-    }; 
+    };
+    hostName = hostName; 
   };
   
   users.users = {
@@ -70,6 +83,19 @@ in
     };
   };
   
-  system.stateVersion = "19.03"; # Did you read the comment?
+  nix = { 
+    gc = {
+      automatic = true;
+      dates = "weekly";
+      options = "--delete-older-than 180d";
+    };
+  };
 
+  system = {
+    stateVersion = "19.03"; 
+  };
 }
+
+
+
+
