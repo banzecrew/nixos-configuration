@@ -8,7 +8,7 @@ let
 
   tmpPackages = [];
 
-  isEnableGUI = true;
+  isEnableGUI = false;
   isEnableSSHD = true;
   isEnableFW = false;
   isAllowUnfree = true;
@@ -56,8 +56,10 @@ in
   };
 
   services = {
-    openssh.enable = isEnableSSHD;
-    
+    openssh = {
+      enable = isEnableSSHD;
+      permitRootLogin = "yes";
+    };
     xserver = {
       enable = isEnableGUI;
       displayManager = {
